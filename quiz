@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뱀파이어를 이해하는 특별한 방법</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a2e;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #0f0f1a;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 32px;
+            color: #a8a8b3;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            border: none;
+            border-radius: 8px;
+            background-color: #4a148c;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: left;
+        }
+
+        .button:hover {
+            background-color: #6a1b9a;
+        }
+
+        .start-button {
+            background-color: #6200ea;
+            text-align: center;
+            font-size: 18px;
+            margin-top: 32px;
+        }
+
+        .scene-counter {
+            font-size: 14px;
+            color: #a8a8b3;
+            margin-bottom: 8px;
+        }
+
+        .scene-text {
+            font-size: 16px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .result-card {
+            background-color: #311b92;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .result-description {
+            color: #e0e0e0;
+        }
+
+        .other-characters {
+            margin-top: 24px;
+        }
+
+        .character-card {
+            background-color: #1a237e;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="start-screen" class="card">
+            <h1 class="title">뱀파이어를 이해하는 특별한 방법</h1>
+            <p class="subtitle">당신과 비슷한 캐릭터는?</p>
+            <button class="button start-button" onclick="startGame()">시작하기</button>
+        </div>
+
+        <div id="game-screen" class="card hidden">
+            <div class="scene-counter"></div>
+            <p class="scene-text"></p>
+            <div id="choices"></div>
+        </div>
+
+        <div id="result-screen" class="card hidden">
+            <h2 class="title">당신의 선택 결과</h2>
+            <div class="result-card">
+                <h3 class="result-title">⭐ 당신과 가장 비슷한 캐릭터 ⭐</h3>
+                <div id="main-result"></div>
+            </div>
+            <div class="other-characters">
+                <h3 class="title">다른 캐릭터들과의 유사도:</h3>
+                <div id="other-results"></div>
+            </div>
+            <button class="button start-button" onclick="startGame()">다시 시작하기</button>
+        </div>
+    </div>
+
+    <script>
+        const scenes = [
+            {
+                text: "인간과 뱀파이어의 공존이 시작된 지 10년, 당신은 뱀파이어가 되었습니다. 거리에는 혈청으로 만든 담배를 피우는 이들의 모습이 일상이 되었죠...",
+                choices: [
+                    { text: "누군가 진짜 내 모습을 이해해줄 수 있을까...", type: 1 },
+                    { text: "혈청담배? 본능을 속이는 거짓된 위안일 뿐이야.", type: 2 },
+                    { text: "뱀파이어의 새로운 삶의 방식, 흥미로운데요.", type: 3 },
+                    { text: "규칙을 지키며 살아가는 건 어렵지 않아.", type: 4 }
+                ]
+            },
+            {
+                text: "편의점 앞. 혈청담배를 피우는 뱀파이어들 사이로 달콤한 인간의 피 냄새가 섞여 들어옵니다...",
+                choices: [
+                    { text: "이 갈증보다 더 깊은 갈망이 있어... 누군가 날 이해해주길.", type: 1 },
+                    { text: "자연스러운 본능을 왜 참아야 하지?", type: 2 },
+                    { text: "흥미로운 현상이에요. 본능과 이성의 갈등...", type: 3 },
+                    { text: "인공혈액이면 충분해. 더 이상은 필요 없어.", type: 4 }
+                ]
+            },
+            {
+                text: "거리에서 한 뱀파이어가 죽음을 구하고 있습니다. 상담사와 해결사가 그를 만나러 갑니다...",
+                choices: [
+                    { text: "누군가는 내 고통도 저렇게 들어줄 수 있을까...", type: 1 },
+                    { text: "죽고 싶다고? 삶의 즐거움을 모르는군.", type: 2 },
+                    { text: "흥미로운 선택이네요. 어떤 과정을 거쳤을까요?", type: 3 },
+                    { text: "모든 선택에는 책임이 따르는 법이지.", type: 4 }
+                ]
+            },
+            {
+                text: "최신 혈청담배 전문점. 다양한 혈액형과 향으로 만든 담배가 진열되어 있습니다. 마치 고급 시가 전문점 같은 분위기가...",
+                choices: [
+                    { text: "이런 인공적인 것으로는 내 본능이 채워질 리 없어...", type: 1 },
+                    { text: "결국 본능을 속이는 거짓된 위안일 뿐이야.", type: 2 },
+                    { text: "뱀파이어와 인간의 공존을 위한 흥미로운 해결책이군요.", type: 3 },
+                    { text: "기술의 발전이 가져온 현명한 대안이야.", type: 4 }
+                ]
+            },
+            {
+                text: "한밤중, 당신의 정체를 아는 인간이 도움을 요청해왔습니다...",
+                choices: [
+                    { text: "드디어 누군가 나를 있는 그대로 봐주는 걸까...", type: 1 },
+                    { text: "재미있는 상황이 될 것 같은데?", type: 2 },
+                    { text: "인간과 뱀파이어의 관계를 연구할 좋은 기회네요.", type: 3 },
+                    { text: "경계를 지키며 돕는 게 좋겠어.", type: 4 }
+                ]
+            },
+            {
+                text: "당신 앞에 치료제가 있습니다. 인간으로 돌아갈 수 있는 단 한 번의 기회...",
+                choices: [
+                    { text: "이해받지 못한다면 의미가 없어...", type: 1 },
+                    { text: "누가 이런 걸 원하겠어?", type: 2 },
+                    { text: "뱀파이어의 선택... 흥미로운 연구가 되겠네요.", type: 3 },
+                    { text: "각자의 선택을 존중해야지.", type: 4 }
+                ]
+            }
+        ];
+
+        const characters = {
+            1: {
+                title: "갈망하는 뱀파이어",
+                description: "당신을 이해해줄 단 한 사람을 찾아 헤매는 당신... 그 강렬한 갈망이 당신을 움직이게 합니다."
+            },
+            2: {
+                title: "욕망의 뱀파이어",
+                description: "본능에 충실하며 사랑을 위해서라면 무엇이든 할 수 있는 당신."
+            },
+            3: {
+                title: "신비한 심리학자",
+                description: "뱀파이어를 이해하고자 하는 당신... 하지만 당신의 진짜 목적은 무엇인가요?"
+            },
+            4: {
+                title: "고독한 해결사",
+                description: "철저한 자기통제로 살아가는 당신. 인간과 뱀파이어 사이의 경계에서."
+            }
+        };
+
+        let currentScene = 0;
+        let choices = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function showScreen(screenId) {
+            ['start-screen', 'game-screen', 'result-screen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function startGame() {
+            currentScene = 0;
+            choices = [];
+            showScreen('game-screen');
+            showScene();
+        }
+
+        function showScene() {
+            const scene = scenes[currentScene];
+            document.querySelector('.scene-counter').textContent = `Scene ${currentScene + 1} / ${scenes.length}`;
+            document.querySelector('.scene-text').textContent = scene.text;
+            
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            
+            shuffleArray([...scene.choices]).forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'button';
+                button.textContent = choice.text;
+                button.onclick = () => handleChoice(choice.type);
+                choicesDiv.appendChild(button);
+            });
+        }
+
+        function handleChoice(type) {
+            choices.push(type);
+            if (currentScene < scenes.length - 1) {
+                currentScene++;
+                showScene();
+            } else {
+                showResult();
+            }
+        }
+
+        function getMostFrequentType() {
+            const counts = {};
+            choices.forEach(type => {
+                counts[type] = (counts[type] || 0) + 1;
+            });
+            return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+        }
+
+        function showResult() {
+            showScreen('result-screen');
+            const resultType = getMostFrequentType();
+            const mainResult = characters[resultType];
+
+            document.getElementById('main-result').innerHTML = `
+                <h4 class="result-title">${mainResult.title}</h4>
+                <p class="result-description">${mainResult.description}</p>
+            `;
+
+            const otherResultsHtml = Object.entries(characters)
+                .filter(([type]) => type !== resultType)
+                .map(([_, char]) => `
+                    <div class="character-card">
+                        <h4 class="result-title">${char.title}</h4>
+                        <p class="result-description">${char.description}</p>
+                    </div>
+                `)
+                .join('');
+
+            document.getElementById('other-results').innerHTML = otherResultsHtml;
+        }
+    </script>
+</body>
+</html>
